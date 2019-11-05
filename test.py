@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 import pygame
 import numpy as np
 from pygame.locals import *
