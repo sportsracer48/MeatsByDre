@@ -110,7 +110,7 @@ def main():
     direction = 0
 
     #player status
-    goal    = np.random.random(size = 2)*1000
+    goal    = np.array([-895.0,700.0])
     loc     = np.array([500.0,500.0])
     angle   = 0
     speed   = 0.1
@@ -194,7 +194,8 @@ def main():
                 else:
                     direction += np.sign(sy)
                     direction %= nDirections
-                goal    = np.random.random(size = 2)*1000
+                loc     = np.array([500.0,500.0])
+                angle   = 0
                 speak_word(lines[line]+' '+directions[direction])
             swipe = np.array([0,0])
 
