@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import pygame as pg
 import numpy as np
 from pygame.locals import *
@@ -21,12 +22,12 @@ nDirections = len(directions)
 tutorials = ['Swipe up or down to change direction. Swipe left or right to change destination.',
              'Tap and hold to repeat the following instructions. Swipe left and right to cycle through subway lines. Swipe up or down to select inbound or outbound. Tap twice to confirm which destination you have selected. Tap once to request a beep. Follow your ears in the direction of the beep.',
              'Tap and hold for instructions.']
-instructions = 'Swipe left and right to cycle through subway lines. Swipe up or down to select inbound or outbound. Tap twice to confirm which destination you have selected. Tap once to request a beep. Follow your ears in the direction of the beep.'
+instructions = 'Swipe left and right to cycle through subway lines. Swipe up or down to select inbound or outbound. Tap twice to confirm which destination you have selected. Tap once to request a beep. Follow your ears in the direction of the beep. Tap and hold to repeat these instructions.'
 instructionFnames = ['tut0','tut1','inst']
 if len(sys.argv) > 1:
     mode = int(sys.argv[1])
 else:
-    mode = 0
+    mode = 2
 tutorial = tutorials[mode]
 
 stop     = 'You have arrived!'
@@ -146,7 +147,7 @@ def main():
             if event.type == pg.QUIT:
                 done = True
             elif event.type == pg.MOUSEMOTION:
-                if (pg.time.get_ticks()-startTime) > startTimeout:
+                if time > startTimeout:
                     lastMove   = time
                     swipe     += event.rel
             elif event.type == pg.KEYDOWN:
@@ -173,6 +174,7 @@ def main():
             stop_word()
 
         #motion
+        walking = False
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] and not keys[pg.K_RIGHT]:
             angle += angleSpeed*dt
@@ -180,6 +182,7 @@ def main():
             angle -= angleSpeed*dt
         if keys[pg.K_UP] and not keys[pg.K_DOWN]:
             loc   += np.array([cos(angle),sin(angle)])*speed*dt
+            walking = True
         if keys[pg.K_DOWN] and not keys[pg.K_UP]:
             loc   -= np.array([cos(angle),sin(angle)])*speed*dt
 
@@ -206,7 +209,7 @@ def main():
         if not mouseHeld and time-lastClick >= doubleClickTimeout and needToBeep:
             if dp<0:
                 speak_word('turn')
-            elif time-lastBeep > beepTime:
+            if time-lastBeep > beepTime:
                 beep(loc, angle, goal)
                 lastBeep = time
             needToBeep = False
@@ -235,6 +238,26 @@ def main():
         textRec.center = (W//2, H//2+h)
         screen.blit(text,textRec)
 
+        if walking:
+            u = np.array((cos(angle),-sin(angle)))
+            for dx in np.linspace(1,0,5):
+                opacity = int((1-dx)*255)
+                col = pg.Color(opacity,opacity,opacity)
+                beginPt = np.array((W//2, H//2+4*h))-u*dx*15
+                endPt   = beginPt + np.array((50*cos(angle), -50*sin(angle)))
+                arrow1End = endPt + np.array((-15*cos(angle+pi/4), 15*sin(angle+pi/4)))
+                arrow2End = endPt + np.array((-15*cos(angle-pi/4), 15*sin(angle-pi/4)))
+                pg.draw.line(screen, col, beginPt, endPt, 2)
+                pg.draw.line(screen, col, endPt, arrow1End, 2)
+                pg.draw.line(screen, col, endPt, arrow2End, 2)
+        else:
+            beginPt = np.array((W//2, H//2+4*h))
+            endPt   = beginPt + np.array((50*cos(angle), -50*sin(angle)))
+            arrow1End = endPt + np.array((-15*cos(angle+pi/4), 15*sin(angle+pi/4)))
+            arrow2End = endPt + np.array((-15*cos(angle-pi/4), 15*sin(angle-pi/4)))
+            pg.draw.line(screen, white, beginPt, endPt, 2)
+            pg.draw.line(screen, white, endPt, arrow1End, 2)
+            pg.draw.line(screen, white, endPt, arrow2End, 2)
         pg.display.update()
 
 if __name__ == '__main__':
